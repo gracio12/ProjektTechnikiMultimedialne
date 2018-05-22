@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Myszkowa Parallaxa</title>
+    <style>
+        body {
+            background: #2a3045;
+            margin: 0;
+        }
+
+        section {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            height: 99vh;
+            align-items: center;
+            min-height: 499px;
+        }
+    </style>
+</head>
+<body>
+<section>
+    <div id="container"></div>
+</section>
+<script src="js/TweenMax.min.js"></script>
+<script src="js/snap.svg-min.js"></script>
+<script>
+    var warstwy = [];
+    var height = 600;
+    var width = 600;
+    var zaladowane = 0;
+    var container = document.getElementById("container");
+    var snap = new Snap(width, height);
+    var obrazki = [
+        {url: "img/kotek2.gif", x: -39, y: -99, offset: -0.25},
+        {url: "img/warstwa3.png", x: -439, y: 139, offset: 0.3},
+        {url: "img/warstwa2.png", x: -9, y: 279, offset: 0.1},
+        {url: "img/warstwa1.png", x: -89, y: 429, offset: -0.1},
+        {url: "img/logo.png", x: 99, y: 76, offset: 0.15},
+        {url: "img/granica.png", x: 79, y: 89, offset: 0.2},
+        {url: "img/granica2.png", x: -19, y: 1, offset: 0}
+    ];
+    var obraz,_obraz,i,granica,deltaX,deltaY,lay,x3,y3,group,obj;
+
+    program_glowny();
+
+
+    function program_glowny(){
+        container.appendChild(snap.node);//podłączenie snap-a pod container
+        group = snap.g();//stworzenie grupy elementów dla zmiennej group
+        obj = snap.g();//stworzenie grupy elementów dla zmiennej obj
+        obj.attr({transform: "scale(1)"});//ustawienie atrybutu transform na wartość scale(1) dla obiektu obj
+        group.append(obj);//podłączenie groupy obj pod grupe group
+
+        for (i = 0; i < obrazki.length; i++) {
+            obraz = new Image();//przypisanie zmiennej obraz klase Image
+            obraz.src = obrazki[i].url;//do zmiennej obraz przypisanie i-tego adresu obrazu
+            obraz.onload = zliczaj_obrazy;// wywołanie dla zmiennej obraz funkcji zaladuj_obraz
+            _obraz = snap.image(obrazki[i].url, obrazki[i].x, obrazki[i].y);//zaladowanie "powierzchni" obrazowej do zmiennej _obraz
+            obj.append(_obraz);//dołączenie powierzchni do obj
+            warstwy.push(_obraz);//dodanie do tablicy warstwy obrazu
+        }
+    }
+
+    function zliczaj_obrazy(e) {
+        zaladowane++;//inc
+        if (zaladowane == obrazki.length) {
+            zdarzenia();//wywołanie funkcji zdarzeń
+        }
+    }
+
+    function zdarzenia() {
+        granica = warstwy[warstwy.length - 1];
+        group.attr({mask: granica});
+        container.addEventListener("mouseover", f3);//najechanie na element
+        container.addEventListener("mouseout", f2);//odjechanie z elementu
+        container.addEventListener("mousemove", f1);//ruch myszką
+    }
+
+    function f1(e) {
+        deltaX = e.offsetX - (width / 2);
+        deltaY = e.offsetY - (height / 2);
+        for (i = 0; i < warstwy.length; i++) {
+            lay = warstwy[i];
+            x3 = deltaX * obrazki[i].offset;
+            y3 = deltaY * obrazki[i].offset;
+            TweenMax.to(lay.node, 0.2, {x: x3, y: y3});
+        }
+        TweenMax.to(snap.node, 0.1, {rotationY: deltaX / 9, rotationX: -deltaY / 9});
+    }
+
+    function f2(e) {
+        for (i = 0; i < warstwy.length; i++) {
+            lay = warstwy[i];
+            TweenMax.to(lay.node, 0.8, {x: 0, y: 0, ease: Circ.easeOut});
+        }
+        TweenMax.to(snap.node, 0.8, {scale: 0.8, rotationY: 0, rotationX: 0, ease: Bounce.easeOut});
+        TweenMax.to(obj.node, 1, {rotationY: 0, rotationX: 0});
+    }
+
+    function f3(e) {
+        TweenMax.to(snap.node, 0.4, {scale: 1, ease: Elastic.easeOut});
+    }
+
+</script>
+</body>
+</html>
